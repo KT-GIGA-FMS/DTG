@@ -2,6 +2,7 @@ package com.kt_giga_fms.dtg.service;
 
 import com.kt_giga_fms.dtg.config.CsvDataConfig;
 import com.kt_giga_fms.dtg.dto.CsvTrackingData;
+import com.kt_giga_fms.dtg.dto.TrackingData;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -101,7 +102,7 @@ public class CsvDataService {
     }
     
     /**
-     * 차량별 다음 추적 데이터 조회
+     * 차량별 다음 추적 데이터 조회 (CsvTrackingData 반환)
      */
     public CsvTrackingData getNextTrackingData(String vehicleId) {
         List<CsvTrackingData> dataList = csvDataMap.get(vehicleId);
@@ -126,6 +127,51 @@ public class CsvDataService {
         vehicleIndexMap.put(vehicleId, currentIndex + 1);
         
         return data;
+    }
+    
+    /**
+     * 차량별 다음 추적 데이터 조회 (TrackingData 반환)
+     */
+    public TrackingData getNextTrackingDataAsTrackingData(String vehicleId, String plateNo, String tripId) {
+        CsvTrackingData csvData = getNextTrackingData(vehicleId);
+        if (csvData == null) {
+            return null;
+        }
+        
+        return convertToTrackingData(csvData, plateNo, tripId);
+    }
+    
+    /**
+     * CsvTrackingData를 TrackingData로 변환
+     */
+    private TrackingData convertToTrackingData(CsvTrackingData csvData, String plateNo, String tripId) {
+        TrackingData trackingData = new TrackingData();
+        
+        // 기본 필드 설정
+        trackingData.setVehicleId(csvData.getVehicleId());
+        trackingData.setPlateNo(plateNo);
+        trackingData.setTripId(tripId);
+        trackingData.setTimestamp(LocalDateTime.now()); // 현재 시간으로 설정
+        
+        // GPS 및 차량 정보
+        trackingData.setLatitude(csvData.getLatitude());
+        trackingData.setLongitude(csvData.getLongitude());
+        trackingData.setSpeed(csvData.getSpeed());
+        trackingData.setHeading(csvData.getHeading());
+        trackingData.setFuelLevel(csvData.getFuelLevel());
+        trackingData.setEngineStatus(csvData.getEngineStatus());
+        
+        // CSV에서 추가된 필드들
+        trackingData.setVehicleName(csvData.getVehicleName());
+        trackingData.setStatus(csvData.getStatus());
+        trackingData.setRoadCondition(csvData.getRoadCondition());
+        trackingData.setTrafficCondition(csvData.getTrafficCondition());
+        trackingData.setRouteName(csvData.getRouteName());
+        
+        // 고도는 기본값 설정 (CSV에 없으므로)
+        trackingData.setAltitude(50.0);
+        
+        return trackingData;
     }
     
     /**
