@@ -1,0 +1,64 @@
+name: Deploy dtg-service (Docker Hub + App Service)
+
+on:
+  push:
+    branches: "deploy"
+    paths:
+      - "src/**"
+      - "build.gradle"
+      - "Dockerfile"
+      - ".github/workflows/deploy-dtg-service.yml"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: rlfrkdms1/dtg-service   # <-- Docker Hub 리포지토리
+  RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set tag
+        id: vars
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Docker Hub login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push (Docker Hub)
+        run: |
+          docker build -t $IMAGE_NAME:${{ steps.vars.outputs.TAG }} .
+          docker tag  $IMAGE_NAME:${{ steps.vars.outputs.TAG }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ steps.vars.outputs.TAG }}
+          docker push $IMAGE_NAME:latest
+
+      # Azure Web App에 Docker 이미지 배포
+      - name: Deploy to Azure Web App (container)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          images: index.docker.io/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.TAG }}
+
+      # 환경변수 설정 (데이터베이스 연결 정보)
+      - name: Set environment variables
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          
+      # 배포 완료 후 대기
+      - name: Wait for deployment
+        run: |
+          echo "배포 완료 후 헬스체크 대기 중..."
+          sleep 60
