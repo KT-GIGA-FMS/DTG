@@ -1,12 +1,12 @@
 spring:
   application:
     name: dtg-service
-  
-  redis:
-    host: ${REDIS_DATASOURCE_HOST}
-    port: ${REDIS_DATASOURCE_PORT:6380}
-    password: ${REDIS_DATASOURCE_PASSWORD}
-    ssl: true
+  data:
+    redis:
+      host: ${REDIS_DATASOURCE_HOST}
+      port: ${REDIS_DATASOURCE_PORT:6380}
+      password: ${REDIS_DATASOURCE_PASSWORD}
+      ssl: true
 
 # Swagger Configuration
 springdoc:
