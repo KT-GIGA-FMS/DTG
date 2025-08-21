@@ -139,7 +139,8 @@ class DtgControllerTest {
                         .content(objectMapper.writeValueAsString(tripEndRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("운행이 종료되었습니다."));
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data").value("운행이 종료되었습니다."));
 
         verify(dtgTrackingService, times(1)).endTrip(any(TripEndRequest.class));
     }
@@ -267,7 +268,8 @@ class DtgControllerTest {
         mockMvc.perform(get("/api/v1/dtg/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("DTG 서비스가 정상적으로 실행 중입니다."));
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data").value("DTG 서비스가 정상적으로 실행 중입니다."));
     }
 
     @Test
