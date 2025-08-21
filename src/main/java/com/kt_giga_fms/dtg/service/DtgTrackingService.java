@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +22,16 @@ public class DtgTrackingService {
     
     private final SimpMessagingTemplate messagingTemplate;
     private final CarTrackingIntegrationService carTrackingIntegrationService;
+    private final CsvDataService csvDataService;
     private final Map<String, TripSession> activeTrips = new ConcurrentHashMap<>();
+    
+    /**
+     * 애플리케이션 시작 시 CSV 데이터 초기화
+     */
+    @PostConstruct
+    public void initialize() {
+        csvDataService.initializeCsvData();
+    }
     
     /**
      * 운행 시작
@@ -84,19 +94,50 @@ public class DtgTrackingService {
             if (session.isActive()) {
                 TrackingData trackingData = generateTrackingData(session);
                 
-                // car-tracking-service로 데이터 전송
-                carTrackingIntegrationService.sendTrackingData(trackingData);
-                
-                // WebSocket으로 프론트엔드에 데이터 전송
-                sendToFrontend(trackingData);
+                if (trackingData != null) {
+                    // car-tracking-service로 데이터 전송
+                    carTrackingIntegrationService.sendTrackingData(trackingData);
+                    
+                    // WebSocket으로 프론트엔드에 데이터 전송
+                    sendToFrontend(trackingData);
+                }
             }
         });
     }
     
     /**
-     * 추적 데이터 생성 (시뮬레이션)
+     * 추적 데이터 생성 (CSV 기반)
      */
     private TrackingData generateTrackingData(TripSession session) {
+        // CSV 데이터가 활성화되어 있지 않으면 랜덤 데이터 생성 (fallback)
+        if (!csvDataService.isEnabled()) {
+            return generateRandomTrackingData(session);
+        }
+        
+        // CSV에서 다음 추적 데이터 조회
+        TrackingData csvData = csvDataService.getNextTrackingDataAsTrackingData(
+            session.getVehicleId(), 
+            session.getPlateNo(), 
+            session.getTripId()
+        );
+        
+        if (csvData != null) {
+            log.debug("CSV 데이터 사용: 차량={}, 위치=({}, {}), 속도={}km/h", 
+                    session.getVehicleId(), 
+                    csvData.getLatitude(), 
+                    csvData.getLongitude(), 
+                    csvData.getSpeed());
+            return csvData;
+        } else {
+            log.warn("차량 {}의 CSV 데이터를 찾을 수 없어 랜덤 데이터 사용", session.getVehicleId());
+            return generateRandomTrackingData(session);
+        }
+    }
+    
+    /**
+     * 랜덤 추적 데이터 생성 (fallback)
+     */
+    private TrackingData generateRandomTrackingData(TripSession session) {
         TrackingData data = new TrackingData();
         data.setVehicleId(session.getVehicleId());
         data.setPlateNo(session.getPlateNo());
