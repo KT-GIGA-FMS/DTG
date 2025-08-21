@@ -1,0 +1,18 @@
+# 운영 환경 설정
+spring:
+  profiles:
+    active: prod
+
+# CSV Data Configuration - 운영 환경
+csv:
+  data:
+    enabled: true
+    # 운영 환경에서는 판교kt 파일만 사용
+    files: |
+      data/판교kt_vehicle_data.csv
+
+# Logging - 운영 환경
+logging:
+  level:
+    com.kt_giga_fms.dtg: INFO
+    org.springframework.web.socket: INFO

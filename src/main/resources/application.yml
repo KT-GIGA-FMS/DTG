@@ -26,6 +26,33 @@ dtg:
     interval: 1000 # 1초마다 데이터 전송
     enabled: true
 
+# CSV Data Configuration
+csv:
+  data:
+    enabled: true
+    # 사용할 CSV 파일 목록 (쉼표로 구분)
+    # 개발/테스트 시: 모든 파일 사용
+    # 운영 시: 특정 파일만 사용
+    files: |
+      data/광화문광장_vehicle_data.csv,
+      data/광화문 (정문)_vehicle_data.csv,
+      data/종묘_vehicle_data.csv,
+      data/창경궁_vehicle_data.csv,
+      data/덕수궁_vehicle_data.csv,
+      data/운현궁_vehicle_data.csv,
+      data/북촌 한옥마을_vehicle_data.csv,
+      data/인사동_vehicle_data.csv,
+      data/관철동 (젊음의 거리)_vehicle_data.csv,
+      data/세운전자상가_vehicle_data.csv,
+      data/청계천 입구_vehicle_data.csv,
+      data/광장시장_vehicle_data.csv,
+      data/귀금속 거리 (종로)_vehicle_data.csv,
+      data/LG 광화문빌딩_vehicle_data.csv,
+      data/조선일보광화문빌딩_vehicle_data.csv,
+      data/판교kt_vehicle_data.csv
+    # 운영 환경에서는 아래와 같이 판교kt 파일만 사용 가능
+    # files: data/판교kt_vehicle_data.csv
+
 # Car Tracking Service Configuration
 car:
   tracking:
