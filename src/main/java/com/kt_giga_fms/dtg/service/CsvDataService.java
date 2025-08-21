@@ -85,16 +85,12 @@ public class CsvDataService {
             
             List<CsvTrackingData> dataList = csvToBean.parse();
             
-            // timestamp 파싱
-            for (CsvTrackingData data : dataList) {
-                if (data.getTimestamp() == null && data.getTimestamp() != null) {
-                    try {
-                        LocalDateTime parsedTime = LocalDateTime.parse(data.getTimestamp().toString(), formatter);
-                        data.setTimestamp(parsedTime);
-                    } catch (Exception e) {
-                        log.warn("Timestamp 파싱 실패: {}", data.getTimestamp());
-                    }
-                }
+            // 데이터 검증 및 로깅
+            if (!dataList.isEmpty()) {
+                CsvTrackingData firstData = dataList.get(0);
+                log.debug("CSV 파일 {}에서 첫 번째 데이터 로드: vehicleId={}, timestamp={}, latitude={}, longitude={}", 
+                    csvFile, firstData.getVehicleId(), firstData.getTimestamp(), 
+                    firstData.getLatitude(), firstData.getLongitude());
             }
             
             return dataList;
