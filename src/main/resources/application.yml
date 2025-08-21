@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: dtg-service
+  
+  data:
+    redis:
+      host: ${REDIS_DATASOURCE_HOST}
+      port: ${REDIS_DATASOURCE_PORT:6380}
+      password: ${REDIS_DATASOURCE_PASSWORD}
+      ssl: true            
+      timeout: 3s
+
+# Swagger Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /api-docs
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+# DTG Configuration
+dtg:
+  tracking:
+    interval: 1000 # 1초마다 데이터 전송
+    enabled: true
+
+# Car Tracking Service Configuration
+car:
+  tracking:
+    service:
+      url: ${CAR_TRACKING_SERVICE_URL:http://localhost:8080}
+
+# Logging
+logging:
+  level:
+    com.kt_giga_fms.dtg: DEBUG
+    org.springframework.web.socket: DEBUG
