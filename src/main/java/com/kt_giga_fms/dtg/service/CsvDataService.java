@@ -1,10 +1,12 @@
 package com.kt_giga_fms.dtg.service;
 
+import com.kt_giga_fms.dtg.config.CsvDataConfig;
 import com.kt_giga_fms.dtg.dto.CsvTrackingData;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -18,28 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CsvDataService {
     
+    private final CsvDataConfig csvDataConfig;
     private final Map<String, List<CsvTrackingData>> csvDataMap = new ConcurrentHashMap<>();
     private final Map<String, Integer> vehicleIndexMap = new ConcurrentHashMap<>();
-    private final List<String> csvFiles = Arrays.asList(
-        "data/광화문광장_vehicle_data.csv",
-        "data/광화문 (정문)_vehicle_data.csv",
-        "data/종묘_vehicle_data.csv",
-        "data/창경궁_vehicle_data.csv",
-        "data/덕수궁_vehicle_data.csv",
-        "data/운현궁_vehicle_data.csv",
-        "data/북촌 한옥마을_vehicle_data.csv",
-        "data/인사동_vehicle_data.csv",
-        "data/관철동 (젊음의 거리)_vehicle_data.csv",
-        "data/세운전자상가_vehicle_data.csv",
-        "data/청계천 입구_vehicle_data.csv",
-        "data/광장시장_vehicle_data.csv",
-        "data/귀금속 거리 (종로)_vehicle_data.csv",
-        "data/LG 광화문빌딩_vehicle_data.csv",
-        "data/조선일보광화문빌딩_vehicle_data.csv",
-        "data/판교kt_vehicle_data.csv"
-    );
     
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
@@ -47,17 +33,31 @@ public class CsvDataService {
      * CSV 파일들을 로드하고 초기화
      */
     public void initializeCsvData() {
+        if (!csvDataConfig.isEnabled()) {
+            log.info("CSV 데이터가 비활성화되어 있습니다.");
+            return;
+        }
+        
         log.info("CSV 데이터 초기화 시작...");
+        
+        List<String> csvFiles = csvDataConfig.getCsvFiles();
+        if (csvFiles == null || csvFiles.isEmpty()) {
+            log.warn("설정된 CSV 파일이 없습니다.");
+            return;
+        }
         
         for (String csvFile : csvFiles) {
             try {
-                List<CsvTrackingData> dataList = loadCsvFile(csvFile);
-                if (!dataList.isEmpty()) {
-                    String vehicleId = dataList.get(0).getVehicleId();
-                    csvDataMap.put(vehicleId, dataList);
-                    vehicleIndexMap.put(vehicleId, 0);
-                    log.info("CSV 파일 로드 완료: {} (차량: {}, 데이터: {}개)", 
-                            csvFile, vehicleId, dataList.size());
+                String trimmedFile = csvFile.trim();
+                if (!trimmedFile.isEmpty()) {
+                    List<CsvTrackingData> dataList = loadCsvFile(trimmedFile);
+                    if (!dataList.isEmpty()) {
+                        String vehicleId = dataList.get(0).getVehicleId();
+                        csvDataMap.put(vehicleId, dataList);
+                        vehicleIndexMap.put(vehicleId, 0);
+                        log.info("CSV 파일 로드 완료: {} (차량: {}, 데이터: {}개)", 
+                                trimmedFile, vehicleId, dataList.size());
+                    }
                 }
             } catch (Exception e) {
                 log.error("CSV 파일 로드 실패: {}", csvFile, e);
@@ -156,5 +156,12 @@ public class CsvDataService {
      */
     public int getCurrentIndex(String vehicleId) {
         return vehicleIndexMap.getOrDefault(vehicleId, 0);
+    }
+    
+    /**
+     * CSV 데이터 활성화 여부 확인
+     */
+    public boolean isEnabled() {
+        return csvDataConfig.isEnabled();
     }
 }
