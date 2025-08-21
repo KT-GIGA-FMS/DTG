@@ -100,9 +100,26 @@ public class DtgTrackingService {
                     
                     // WebSocket으로 프론트엔드에 데이터 전송
                     sendToFrontend(trackingData);
+                } else {
+                    // CSV 데이터가 끝에 도달했으면 운행 자동 종료
+                    log.info("차량 {}의 CSV 데이터가 모두 소진되어 운행을 자동 종료합니다.", session.getVehicleId());
+                    autoEndTrip(session);
                 }
             }
         });
+    }
+    
+    /**
+     * CSV 데이터 소진으로 인한 자동 운행 종료
+     */
+    private void autoEndTrip(TripSession session) {
+        TripEndRequest endRequest = new TripEndRequest();
+        endRequest.setVehicleId(session.getVehicleId());
+        endRequest.setEndLatitude(session.getStartLatitude()); // 시작 위치로 설정
+        endRequest.setEndLongitude(session.getStartLongitude());
+        endRequest.setEndReason("CSV 데이터 소진으로 인한 자동 종료");
+        
+        endTrip(endRequest);
     }
     
     /**

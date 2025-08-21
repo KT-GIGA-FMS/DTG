@@ -116,9 +116,10 @@ public class CsvDataService {
             currentIndex = 0;
         }
         
-        // 인덱스가 데이터 크기를 초과하면 처음부터 다시 시작
+        // 인덱스가 데이터 크기를 초과하면 null 반환 (파일 끝)
         if (currentIndex >= dataList.size()) {
-            currentIndex = 0;
+            log.info("차량 {}의 CSV 데이터가 모두 소진됨", vehicleId);
+            return null;
         }
         
         CsvTrackingData data = dataList.get(currentIndex);
@@ -139,6 +140,23 @@ public class CsvDataService {
         }
         
         return convertToTrackingData(csvData, plateNo, tripId);
+    }
+    
+    /**
+     * 차량의 CSV 데이터가 끝에 도달했는지 확인
+     */
+    public boolean isCsvDataExhausted(String vehicleId) {
+        List<CsvTrackingData> dataList = csvDataMap.get(vehicleId);
+        if (dataList == null || dataList.isEmpty()) {
+            return true;
+        }
+        
+        Integer currentIndex = vehicleIndexMap.get(vehicleId);
+        if (currentIndex == null) {
+            return false;
+        }
+        
+        return currentIndex >= dataList.size();
     }
     
     /**
