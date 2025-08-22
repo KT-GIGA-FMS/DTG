@@ -22,7 +22,7 @@ KT Giga FMS의 DTG(Data Terminal Gateway) 서비스입니다. 차량의 실시�
 ## 🏗️ 아키텍처
 
 ```
-DTG Service (8085)
+DTG Service (8080)
 ├── REST API (운행 시작/종료)
 ├── WebSocket (실시간 데이터)
 ├── Scheduled Task (1초마다 데이터 전송)
