@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: rlfrkdms1/dtg-service   # <-- Docker Hub 리포지토리
+  IMAGE_NAME: rlfrkdms1/dtg-service   
   RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
 
 jobs:
