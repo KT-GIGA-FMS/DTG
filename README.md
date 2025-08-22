@@ -107,8 +107,8 @@ export CAR_TRACKING_SERVICE_URL=<your-car-tracking-service-url>
 ## 📊 Swagger UI
 
 서비스 실행 후 다음 URL에서 API 문서를 확인할 수 있습니다:
-- **Swagger UI**: http://localhost:8085/swagger-ui.html
-- **API Docs**: http://localhost:8085/api-docs
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **API Docs**: http://localhost:8080/api-docs
 
 ## 🔄 데이터 흐름
 
