@@ -3,11 +3,6 @@ name: Deploy dtg-service (Docker Hub + App Service)
 on:
   push:
     branches: "deploy"
-    paths:
-      - "src/**"
-      - "build.gradle"
-      - "Dockerfile"
-      - ".github/workflows/deploy-dtg-service.yml"
   workflow_dispatch:
 
 env:
